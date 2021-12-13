@@ -6,10 +6,16 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     // api which is checking balance of user
-    transferTokenToAddr();
-    res.json({ "message": "Hello world" });
+    const flag = await transferTokenToAddr();
+    if(flag===true){
+        res.json({ "message": "Hello world" });
+    }
+    else{
+        res.json({ "message": "Bye world" });
+    }
+    
 });
 
 //steps
@@ -25,14 +31,24 @@ const transferTokenToAddr = async () => {
     };
 
     // signing the transaction with admin private key (0x6827cfc07bacf0565ab8b89a2618cc4353614e0b5e69c107845adde566401647 this my test account private key)
-    const signed = await web3.eth.accounts.signTransaction(options, '0x6827cfc07bacf0565ab8b89a2618cc4353614e0b5e69c107845adde566401647');
-    //submitting transaction to blockchain
-    const receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction);
-    console.log(receipt);
+    try{
+        const signed = await web3.eth.accounts.signTransaction(options, '0x6827cfc07bacf0565ab8b89a2618cc4353614e0b5e69c107845adde566401647');
+        //submitting transaction to blockchain
+        const receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction);
+        console.log(receipt);
+        
+        console.log('value of account balance of  sender:::', await web3.eth.getBalance("0x72217D8C5A571948B768AaBB58da85c7FA86e55f"));
     
-    console.log('value of account balance of  sender:::', await web3.eth.getBalance("0x72217D8C5A571948B768AaBB58da85c7FA86e55f"));
+        console.log('value of account balance of receiver:::', await web3.eth.getBalance("0xeb4e56eB9bab2B1d15C36aC5b624311E663573B7"));
 
-    console.log('value of account balance of receiver:::', await web3.eth.getBalance("0xeb4e56eB9bab2B1d15C36aC5b624311E663573B7"));
+        return true;
+    }
+
+    catch(error){
+        console.log("value of error :::",error);
+        return false;
+    }
+    
 }
 
 
